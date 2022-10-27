@@ -15,6 +15,7 @@ func (db DB) CreateTransactions(transactions []dmodels.Transaction) error {
 	}
 	q := squirrel.Insert(dmodels.TransactionsTable).Columns(
 		"trn_hash",
+		"trn_block_id",
 		"trn_status",
 		"trn_height",
 		"trn_messages",
@@ -35,6 +36,7 @@ func (db DB) CreateTransactions(transactions []dmodels.Transaction) error {
 		}
 		q = q.Values(
 			tx.Hash,
+			tx.BlockId,
 			tx.Status,
 			tx.Height,
 			tx.Messages,

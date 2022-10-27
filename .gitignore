@@ -1,6 +1,6 @@
 .idea/
 vendor/**/
-cosmoscan-api
+cosmoscan*
 config.json
 config.json.*
 backups

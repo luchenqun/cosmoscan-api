@@ -38,8 +38,11 @@ func main() {
 	sch := scheduler.NewScheduler()
 
 	sch.AddProcessWithInterval(s.UpdateValidatorsMap, time.Minute*10)
-	sch.AddProcessWithInterval(s.UpdateProposals, time.Minute*15)
-	sch.AddProcessWithInterval(s.UpdateValidators, time.Minute*15)
+	sch.AddProcessWithInterval(s.UpdateProposals, time.Minute*10)
+	sch.AddProcessWithInterval(s.UpdateValidators, time.Minute*10)
+	sch.AddProcessWithInterval(s.MakeUpdateBalances, time.Minute*10)
+	sch.AddProcessWithInterval(s.MakeStats, time.Minute*10)
+
 	sch.EveryDayAt(s.MakeUpdateBalances, 1, 0)
 	sch.EveryDayAt(s.MakeStats, 2, 0)
 

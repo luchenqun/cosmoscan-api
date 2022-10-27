@@ -875,7 +875,7 @@ func calculateAtomAmount(amountItems []Amount) (decimal.Decimal, error) {
 		if item.Denom == "" && item.Amount.IsZero() { // example height=1245781
 			break
 		}
-		if item.Denom != node.MainUnit {
+		if item.Denom != "aevmos" && item.Denom != "agov" {
 			return volume, fmt.Errorf("unknown demon (currency): %s", item.Denom)
 		}
 		volume = volume.Add(item.Amount)
@@ -914,7 +914,7 @@ func (a Amount) getAmount() (decimal.Decimal, error) {
 	if a.Denom == "" && a.Amount.IsZero() {
 		return decimal.Zero, nil
 	}
-	if a.Denom != node.MainUnit {
+	if a.Denom != "agov" && a.Denom != "aevmos" {
 		return decimal.Zero, fmt.Errorf("unknown demon (currency): %s", a.Denom)
 	}
 	a.Amount = a.Amount.Div(precisionDiv)

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	precision = 6
+	precision = 18
 
 	DepositPeriodProposalStatus = "PROPOSAL_STATUS_DEPOSIT_PERIOD"
 	VotingPeriodProposalStatus  = "PROPOSAL_STATUS_VOTING_PERIOD"
@@ -19,7 +19,8 @@ const (
 	RejectedProposalStatus      = "PROPOSAL_STATUS_REJECTED"
 	FailedProposalStatus        = "PROPOSAL_STATUS_FAILED"
 
-	MainUnit = "uatom"
+	MainUnit    = "aevmos"
+	GovMainUnit = "agov"
 )
 
 var PrecisionDiv = decimal.New(1, precision)
@@ -44,7 +45,7 @@ type (
 			Type string `json:"@type"`
 			Key  string `json:"key"`
 		} `json:"consensus_pubkey"`
-		Tokens          uint64          `json:"tokens,string"`
+		Tokens          decimal.Decimal `json:"tokens,string"`
 		DelegatorShares decimal.Decimal `json:"delegator_shares"`
 		Description     struct {
 			Moniker  string `json:"moniker"`
@@ -64,7 +65,7 @@ type (
 		MaxChangeRate decimal.Decimal `json:"max_change_rate"`
 	}
 	Inflation struct {
-		Inflation decimal.Decimal `json:"inflation"`
+		Inflation decimal.Decimal `json:"inflation_rate"`
 	}
 	AmountResult struct {
 		Balances []struct {
@@ -119,10 +120,10 @@ type (
 			ProposalID       uint64 `json:"proposal_id,string"`
 			Status           string `json:"status"`
 			FinalTallyResult struct {
-				Yes        int64 `json:"yes,string"`
-				Abstain    int64 `json:"abstain,string"`
-				No         int64 `json:"no,string"`
-				NoWithVeto int64 `json:"no_with_veto,string"`
+				Yes        decimal.Decimal `json:"yes,string"`
+				Abstain    decimal.Decimal `json:"abstain,string"`
+				No         decimal.Decimal `json:"no,string"`
+				NoWithVeto decimal.Decimal `json:"no_with_veto,string"`
 			} `json:"final_tally_result"`
 			SubmitTime     time.Time `json:"submit_time"`
 			DepositEndTime time.Time `json:"deposit_end_time"`
@@ -341,16 +342,16 @@ func (api API) GetValidators() (items []Validator, err error) {
 
 func (api API) GetInflation() (amount decimal.Decimal, err error) {
 	var inflation Inflation
-	err = api.request("cosmos/mint/v1beta1/inflation", &inflation)
+	err = api.request("evmos/inflation/v1/inflation_rate", &inflation)
 	if err != nil {
 		return amount, fmt.Errorf("request: %s", err.Error())
 	}
 	return inflation.Inflation.Mul(decimal.New(100, 0)), nil
 }
 
-func (api API) GetTotalSupply() (amount decimal.Decimal, err error) {
+func (api API) GetTotalSupply(denom string) (amount decimal.Decimal, err error) {
 	var s Supply
-	err = api.request(fmt.Sprintf("cosmos/bank/v1beta1/supply/%s", MainUnit), &s)
+	err = api.request(fmt.Sprintf("cosmos/bank/v1beta1/supply/%s", denom), &s)
 	if err != nil {
 		return amount, fmt.Errorf("request: %s", err.Error())
 	}

@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const genesisJson = "https://raw.githubusercontent.com/cosmos/launch/master/genesis.json"
+const genesisJson = "https://gist.githubusercontent.com/luchenqun/e6dbccc3e07eadd857bdf39cb2366993/raw/1b24efb354d4b18164284b3504c8cce609ff00ba/genesis.json"
 const saveGenesisBatch = 100
 
 type Genesis struct {

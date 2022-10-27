@@ -67,7 +67,7 @@ type (
 		GetCommunityPoolAmount() (amount decimal.Decimal, err error)
 		GetValidators() (items []node.Validator, err error)
 		GetInflation() (amount decimal.Decimal, err error)
-		GetTotalSupply() (amount decimal.Decimal, err error)
+		GetTotalSupply(denom string) (amount decimal.Decimal, err error)
 		GetStakingPool() (sp node.StakingPool, err error)
 		GetBalance(address string) (amount decimal.Decimal, err error)
 		GetStake(address string) (amount decimal.Decimal, err error)

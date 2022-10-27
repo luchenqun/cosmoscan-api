@@ -7,6 +7,7 @@ import (
 	"github.com/everstake/cosmoscan-api/dao/filters"
 	"github.com/everstake/cosmoscan-api/dmodels"
 	"github.com/everstake/cosmoscan-api/log"
+	"github.com/everstake/cosmoscan-api/services/helpers"
 	"github.com/everstake/cosmoscan-api/services/node"
 	"github.com/everstake/cosmoscan-api/smodels"
 	"github.com/shopspring/decimal"
@@ -42,9 +43,9 @@ func (s *ServiceFacade) UpdateProposals() {
 	}
 	validatorsMap := make(map[string]node.Validator)
 	for _, validator := range validators {
-		bench, _ := types.ValAddressFromBech32(validator.OperatorAddress)
+		bench, _ := helpers.ValAddressFromBech32(validator.OperatorAddress)
 		accAddress := types.AccAddress(bench.Bytes())
-		validatorsMap[accAddress.String()] = validator
+		validatorsMap[helpers.Bech32Addr(accAddress)] = validator
 	}
 
 	totalStake, err := s.node.GetStakingPool()
@@ -110,10 +111,10 @@ func (s *ServiceFacade) UpdateProposals() {
 			no = decimal.NewFromInt(tally.Tally.No).Div(node.PrecisionDiv)
 			noWithVeto = decimal.NewFromInt(tally.Tally.NoWithVeto).Div(node.PrecisionDiv)
 		} else {
-			yes = decimal.NewFromInt(p.FinalTallyResult.Yes).Div(node.PrecisionDiv)
-			abstain = decimal.NewFromInt(p.FinalTallyResult.Abstain).Div(node.PrecisionDiv)
-			no = decimal.NewFromInt(p.FinalTallyResult.No).Div(node.PrecisionDiv)
-			noWithVeto = decimal.NewFromInt(p.FinalTallyResult.NoWithVeto).Div(node.PrecisionDiv)
+			yes = p.FinalTallyResult.Yes.Div(node.PrecisionDiv)
+			abstain = p.FinalTallyResult.Abstain.Div(node.PrecisionDiv)
+			no = p.FinalTallyResult.No.Div(node.PrecisionDiv)
+			noWithVeto = p.FinalTallyResult.NoWithVeto.Div(node.PrecisionDiv)
 		}
 
 		turnout := decimal.Zero
@@ -206,9 +207,9 @@ func (s *ServiceFacade) GetProposalVotes(filter filters.ProposalVotes) (items []
 	}
 	validatorsMap := make(map[string]node.Validator)
 	for _, validator := range vm {
-		bench, _ := types.ValAddressFromBech32(validator.OperatorAddress)
+		bench, _ := helpers.ValAddressFromBech32(validator.OperatorAddress)
 		accAddress := types.AccAddress(bench.Bytes())
-		validatorsMap[accAddress.String()] = validator
+		validatorsMap[helpers.Bech32Addr(accAddress)] = validator
 	}
 	votesMap := make(map[string]dmodels.ProposalVote)
 	for _, vote := range votes {
@@ -255,9 +256,9 @@ func (s *ServiceFacade) GetProposalsChartData() (items []smodels.ProposalChartDa
 	}
 	validatorsMap := make(map[string]node.Validator)
 	for _, validator := range validators {
-		bench, _ := types.ValAddressFromBech32(validator.OperatorAddress)
+		bench, _ := helpers.ValAddressFromBech32(validator.OperatorAddress)
 		accAddress := types.AccAddress(bench.Bytes())
-		validatorsMap[accAddress.String()] = validator
+		validatorsMap[helpers.Bech32Addr(accAddress)] = validator
 	}
 
 	for _, p := range proposals {

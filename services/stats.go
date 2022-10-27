@@ -73,8 +73,7 @@ func (s *ServiceFacade) MakeStats() {
 		{
 			title: dmodels.StatsTotalDelegators,
 			fetch: func() (value decimal.Decimal, err error) {
-				total, err := s.dao.GetDelegatorsTotal(filters.Delegators{
-				})
+				total, err := s.dao.GetDelegatorsTotal(filters.Delegators{})
 				if err != nil {
 					return value, fmt.Errorf("dao.GetDelegatorsTotal: %s", err.Error())
 				}
@@ -176,7 +175,9 @@ func (s *ServiceFacade) MakeStats() {
 			fetch: func() (value decimal.Decimal, err error) {
 				size, err := s.GetSizeOfNode()
 				if err != nil {
-					return value, fmt.Errorf("GetSizeOfNode: %s", err.Error())
+					//return value, fmt.Errorf("GetSizeOfNode: %s", err.Error())
+					// @todo
+					return decimal.NewFromFloat(0.0), nil
 				}
 				return decimal.NewFromFloat(size), nil
 			},

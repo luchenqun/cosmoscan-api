@@ -85,11 +85,12 @@ func (s *ServiceFacade) GetStakingPie() (pie smodels.Pie, err error) {
 	sort.Slice(validators, func(i, j int) bool {
 		return validators[i].DelegatorShares.GreaterThan(validators[j].DelegatorShares)
 	})
-	if len(validators) < 20 {
+	size := len(validators)
+	if size == 0 {
 		return pie, fmt.Errorf("not enought validators")
 	}
-	parts := make([]smodels.PiePart, 20)
-	for i := 0; i < 20; i++ {
+	parts := make([]smodels.PiePart, size)
+	for i := 0; i < size; i++ {
 		parts[i] = smodels.PiePart{
 			Label: validators[i].OperatorAddress,
 			Title: validators[i].Description.Moniker,
@@ -136,7 +137,7 @@ func (s *ServiceFacade) makeValidators() (validators []smodels.Validator, err er
 			return nil, fmt.Errorf("dao.GetProposedBlocksTotal: %s", err.Error())
 		}
 
-		addressBytes, err := types.GetFromBech32(v.OperatorAddress, types.Bech32PrefixValAddr)
+		addressBytes, err := types.GetFromBech32(v.OperatorAddress, "evmosvaloper")
 		if err != nil {
 			return nil, fmt.Errorf("types.GetFromBech32: %s", err.Error())
 		}
@@ -144,7 +145,7 @@ func (s *ServiceFacade) makeValidators() (validators []smodels.Validator, err er
 		if err != nil {
 			return nil, fmt.Errorf("types.AccAddressFromHex: %s", err.Error())
 		}
-		totalVotes, err := s.dao.GetTotalVotesByAddress(address.String())
+		totalVotes, err := s.dao.GetTotalVotesByAddress(helpers.Bech32Addr(address))
 		if err != nil {
 			return nil, fmt.Errorf("dao.GetTotalVotesByAddress: %s", err.Error())
 		}
@@ -162,7 +163,7 @@ func (s *ServiceFacade) makeValidators() (validators []smodels.Validator, err er
 			Validators: []string{v.OperatorAddress},
 		})
 
-		selfStake, err := s.node.GetDelegatorValidatorStake(address.String(), v.OperatorAddress)
+		selfStake, err := s.node.GetDelegatorValidatorStake(helpers.Bech32Addr(address), v.OperatorAddress)
 		if err != nil {
 			return nil, fmt.Errorf("node.GetDelegatorValidatorStake: %s", err.Error())
 		}
@@ -185,7 +186,7 @@ func (s *ServiceFacade) makeValidators() (validators []smodels.Validator, err er
 			GovernanceVotes: totalVotes,
 			Website:         v.Description.Website,
 			OperatorAddress: v.OperatorAddress,
-			AccAddress:      address.String(),
+			AccAddress:      helpers.Bech32Addr(address),
 			ConsAddress:     consAddress,
 		})
 	}
@@ -277,6 +278,7 @@ func (s *ServiceFacade) GetFeeRanges() (items []smodels.FeeRange, err error) {
 	}
 	step := max.Sub(min).Div(decimal.NewFromInt(50))
 	stepBig := max.Sub(min).Div(decimal.NewFromInt(10))
+	log.Info("min:%s, max:%s, step:%s, stepBig:%s", min.String(), max.String(), step.String(), stepBig.String())
 	for i := int64(1); i <= point; i++ {
 		var validators []smodels.FeeRangeValidator
 		from := step.Mul(decimal.NewFromInt(i)).Sub(step)
@@ -357,7 +359,7 @@ func (s *ServiceFacade) GetValidatorBalance(valAddress string) (balance smodels.
 	if err != nil {
 		return balance, fmt.Errorf("types.AccAddressFromHex: %s", err.Error())
 	}
-	balance.Available, err = s.node.GetBalance(address.String())
+	balance.Available, err = s.node.GetBalance(helpers.Bech32Addr(address))
 	if err != nil {
 		return balance, fmt.Errorf("node.GetBalance: %s", err.Error())
 	}

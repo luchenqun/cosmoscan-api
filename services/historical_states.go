@@ -24,8 +24,9 @@ func (s ServiceFacade) KeepHistoricalState() {
 		if len(states) != 0 {
 			lastState := states[0]
 			if tn.Sub(lastState.CreatedAt.Time) < time.Hour {
-				point := lastState.CreatedAt.Time.Add(time.Hour)
-				<-time.After(point.Sub(tn))
+				// @todo
+				//point := lastState.CreatedAt.Time.Add(time.Hour)
+				//<-time.After(point.Sub(tn))
 			}
 		}
 		state, err := s.makeState()
@@ -45,9 +46,8 @@ func (s ServiceFacade) KeepHistoricalState() {
 	}
 }
 
-
 func (s ServiceFacade) Test() (state dmodels.HistoricalState, err error) {
-	return  s.makeState()
+	return s.makeState()
 }
 
 func (s ServiceFacade) makeState() (state dmodels.HistoricalState, err error) {
@@ -61,16 +61,21 @@ func (s ServiceFacade) makeState() (state dmodels.HistoricalState, err error) {
 		return state, fmt.Errorf("node.GetCommunityPoolAmount: %s", err.Error())
 	}
 	state.CommunityPool = state.CommunityPool.Truncate(2)
-	totalSupply, err := s.node.GetTotalSupply()
+	totalSupply, err := s.node.GetTotalSupply(node.MainUnit)
 	if err != nil {
-		return state, fmt.Errorf("node.GetTotalSupply: %s", err.Error())
+		return state, fmt.Errorf("node.GetTotalSupply %s: %s", node.MainUnit, err.Error())
+	}
+	totalSupplyGov, err := s.node.GetTotalSupply(node.GovMainUnit)
+	if err != nil {
+		return state, fmt.Errorf("node.GetTotalSupply %s: %s", node.GovMainUnit, err.Error())
 	}
 	stakingPool, err := s.node.GetStakingPool()
 	if err != nil {
 		return state, fmt.Errorf("node.GetStakingPool: %s", err.Error())
 	}
-	if !totalSupply.IsZero() {
-		state.StakedRatio = stakingPool.Pool.BondedTokens.Div(totalSupply).Mul(decimal.New(100, 0)).Truncate(2)
+	if !totalSupplyGov.IsZero() {
+		state.StakedRatio = stakingPool.Pool.BondedTokens.Div(totalSupplyGov).Mul(decimal.New(100, 0)).Truncate(2)
+		//log.Info("BondedTokens:%s, totalSupplyGov:%s", stakingPool.Pool.BondedTokens.String(), totalSupplyGov.String())
 	}
 	validators, err := s.node.GetValidators()
 	if err != nil {
@@ -79,15 +84,14 @@ func (s ServiceFacade) makeState() (state dmodels.HistoricalState, err error) {
 	sort.Slice(validators, func(i, j int) bool {
 		return validators[i].DelegatorShares.GreaterThan(validators[j].DelegatorShares)
 	})
-	if len(validators) >= 20 {
-		top20Stake := decimal.Zero
-		for i := 0; i < 20; i++ {
-			top20Stake = top20Stake.Add(validators[i].DelegatorShares)
-		}
-		top20Stake = top20Stake.Div(node.PrecisionDiv)
-		if !stakingPool.Pool.BondedTokens.IsZero() {
-			state.Top20Weight = top20Stake.Div(stakingPool.Pool.BondedTokens).Mul(decimal.New(100, 0)).Truncate(2)
-		}
+
+	top20Stake := decimal.Zero
+	for i := 0; i < 20 && i < len(validators); i++ {
+		top20Stake = top20Stake.Add(validators[i].DelegatorShares)
+	}
+	top20Stake = top20Stake.Div(node.PrecisionDiv)
+	if !stakingPool.Pool.BondedTokens.IsZero() {
+		state.Top20Weight = top20Stake.Div(stakingPool.Pool.BondedTokens).Mul(decimal.New(100, 0)).Truncate(2)
 	}
 
 	state.CirculatingSupply = totalSupply.Truncate(2)
