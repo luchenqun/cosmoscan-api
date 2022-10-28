@@ -276,36 +276,53 @@ func (s *ServiceFacade) GetFeeRanges() (items []smodels.FeeRange, err error) {
 			max = validator.Commission.CommissionRates.Rate
 		}
 	}
-	step := max.Sub(min).Div(decimal.NewFromInt(50))
-	stepBig := max.Sub(min).Div(decimal.NewFromInt(10))
-	log.Info("min:%s, max:%s, step:%s, stepBig:%s", min.String(), max.String(), step.String(), stepBig.String())
-	for i := int64(1); i <= point; i++ {
+	if min.Equal(max) {
 		var validators []smodels.FeeRangeValidator
-		from := step.Mul(decimal.NewFromInt(i)).Sub(step)
-		to := step.Mul(decimal.NewFromInt(i))
-
-		if to.Equal(stepBig.Add(step)) {
-			step = stepBig
-			stepBig = decimal.Zero
-			i = 1
-			continue
-		}
-
 		for _, validator := range validatorsMap {
-			rate := validator.Commission.CommissionRates.Rate
-			if rate.GreaterThan(from) && rate.LessThanOrEqual(to) {
-				validators = append(validators, smodels.FeeRangeValidator{
-					Validator: validator.Description.Moniker,
-					Fee:       rate,
-				})
-			}
+			validators = append(validators, smodels.FeeRangeValidator{
+				Validator: validator.Description.Moniker,
+				Fee:       min,
+			})
 		}
 		items = append(items, smodels.FeeRange{
-			From:       from,
-			To:         to,
+			From:       min,
+			To:         max,
 			Validators: validators,
 		})
+	} else {
+		step := max.Sub(min).Div(decimal.NewFromInt(50))
+		stepBig := max.Sub(min).Div(decimal.NewFromInt(10))
+		for i := int64(1); i <= point; i++ {
+			var validators []smodels.FeeRangeValidator
+			from := step.Mul(decimal.NewFromInt(i)).Sub(step)
+			to := step.Mul(decimal.NewFromInt(i))
+			if i == point && !to.Equal(max) {
+				to = max
+			}
+			if to.Equal(stepBig.Add(step)) {
+				step = stepBig
+				stepBig = decimal.Zero
+				i = 1
+				continue
+			}
+
+			for _, validator := range validatorsMap {
+				rate := validator.Commission.CommissionRates.Rate
+				if rate.GreaterThan(from) && rate.LessThanOrEqual(to) {
+					validators = append(validators, smodels.FeeRangeValidator{
+						Validator: validator.Description.Moniker,
+						Fee:       rate,
+					})
+				}
+			}
+			items = append(items, smodels.FeeRange{
+				From:       from,
+				To:         to,
+				Validators: validators,
+			})
+		}
 	}
+
 	return items, nil
 }
 

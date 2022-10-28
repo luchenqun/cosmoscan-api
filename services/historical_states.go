@@ -25,8 +25,8 @@ func (s ServiceFacade) KeepHistoricalState() {
 			lastState := states[0]
 			if tn.Sub(lastState.CreatedAt.Time) < time.Hour {
 				// @todo
-				//point := lastState.CreatedAt.Time.Add(time.Hour)
-				//<-time.After(point.Sub(tn))
+				point := lastState.CreatedAt.Time.Add(time.Hour)
+				<-time.After(point.Sub(tn))
 			}
 		}
 		state, err := s.makeState()
