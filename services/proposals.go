@@ -106,10 +106,10 @@ func (s *ServiceFacade) UpdateProposals() {
 				log.Error("UpdateProposals: node.ProposalTallyResult: %s", err.Error())
 				return
 			}
-			yes = decimal.NewFromInt(tally.Tally.Yes).Div(node.PrecisionDiv)
-			abstain = decimal.NewFromInt(tally.Tally.Abstain).Div(node.PrecisionDiv)
-			no = decimal.NewFromInt(tally.Tally.No).Div(node.PrecisionDiv)
-			noWithVeto = decimal.NewFromInt(tally.Tally.NoWithVeto).Div(node.PrecisionDiv)
+			yes = tally.Tally.Yes.Div(node.PrecisionDiv)
+			abstain = tally.Tally.Abstain.Div(node.PrecisionDiv)
+			no = tally.Tally.No.Div(node.PrecisionDiv)
+			noWithVeto = tally.Tally.NoWithVeto.Div(node.PrecisionDiv)
 		} else {
 			yes = p.FinalTallyResult.Yes.Div(node.PrecisionDiv)
 			abstain = p.FinalTallyResult.Abstain.Div(node.PrecisionDiv)

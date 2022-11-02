@@ -368,7 +368,7 @@ func (s *ServiceFacade) GetValidatorBalance(valAddress string) (balance smodels.
 	}
 	balance.SelfDelegated = validator.SelfStake
 	balance.OtherDelegated = validator.Power.Sub(validator.SelfStake)
-	addressBytes, err := types.GetFromBech32(valAddress, types.Bech32PrefixValAddr)
+	addressBytes, err := types.GetFromBech32(valAddress, "evmosvaloper")
 	if err != nil {
 		return balance, fmt.Errorf("types.GetFromBech32: %s", err.Error())
 	}

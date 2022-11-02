@@ -162,10 +162,10 @@ type (
 	}
 	ProposalTallyResult struct {
 		Tally struct {
-			Yes        int64 `json:"yes,string"`
-			Abstain    int64 `json:"abstain,string"`
-			No         int64 `json:"no,string"`
-			NoWithVeto int64 `json:"no_with_veto,string"`
+			Yes        decimal.Decimal `json:"yes,string"`
+			Abstain    decimal.Decimal `json:"abstain,string"`
+			No         decimal.Decimal `json:"no,string"`
+			NoWithVeto decimal.Decimal `json:"no_with_veto,string"`
 		} `json:"tally"`
 	}
 	Block struct {
